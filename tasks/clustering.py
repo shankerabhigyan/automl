@@ -62,7 +62,7 @@ class SFS(BaseEstimator, TransformerMixin):
         self.min_clusters = min_clusters
         self.max_clusters = max_clusters
         self.selected_features = []
-        self.tolerance = 1e-4
+        self.tolerance = 1e-8
 
     def _normalize(self, X):
         """
@@ -78,15 +78,46 @@ class SFS(BaseEstimator, TransformerMixin):
         return F_k
     
     def _merge_clusters(self, gmm, X):
-        """
-        we merge the two clusters which result in the min difference in the objective function
-        """
         min_delta_F = np.inf
-        best_merge = None 
-        best_gmm = None # best gmm after merging
+        best_merge = None
+        best_gmm = None
+        
         for i in range(gmm.n_components):
-            for j in range(i+1, gmm.n_components):
-                new_gmm = GaussianMixture()
+            for j in range(i + 1, gmm.n_components):
+                new_gmm = GaussianMixture(n_components=gmm.n_components - 1, random_state=self.random_state)
+                
+                new_weights = np.delete(gmm.weights_, [i, j])
+                new_weights = np.append(new_weights, gmm.weights_[i] + gmm.weights_[j])
+                
+                new_means = np.delete(gmm.means_, [i, j], axis=0)
+                merged_mean = (gmm.weights_[i] * gmm.means_[i] + gmm.weights_[j] * gmm.means_[j]) / (gmm.weights_[i] + gmm.weights_[j])
+                new_means = np.vstack([new_means, merged_mean])
+                
+                new_covariances = np.delete(gmm.covariances_, [i, j], axis=0)
+                merged_covariance = (
+                    gmm.weights_[i] * (gmm.covariances_[i] + np.outer(gmm.means_[i] - merged_mean, gmm.means_[i] - merged_mean)) +
+                    gmm.weights_[j] * (gmm.covariances_[j] + np.outer(gmm.means_[j] - merged_mean, gmm.means_[j] - merged_mean))
+                ) / (gmm.weights_[i] + gmm.weights_[j])
+
+                merged_covariance = np.expand_dims(merged_covariance, axis=0)
+                new_covariances = np.vstack([new_covariances, merged_covariance])
+                
+                new_gmm.weights_ = new_weights
+                new_gmm.means_ = new_means
+                new_gmm.covariances_ = new_covariances
+                new_gmm.precisions_cholesky_ = np.linalg.cholesky(np.linalg.inv(new_covariances))
+                
+                F_k_minus_1_Phi = self._objective_function(X, new_gmm)
+                F_k_Phi = self._objective_function(X, gmm)
+                delta_F = F_k_minus_1_Phi - F_k_Phi
+                
+                if delta_F < min_delta_F:
+                    min_delta_F = delta_F
+                    best_merge = (i, j)
+                    best_gmm = new_gmm
+
+        return best_gmm, best_merge, min_delta_F
+
 
     def _em_clustering(self, X):
         """
@@ -127,6 +158,7 @@ class SFS(BaseEstimator, TransformerMixin):
             n_class = x_class.shape[0]
             mean_diff = (mean_class - means).reshape(-1, 1)
             Sb += n_class * np.dot(mean_diff, mean_diff.T)
+        Sw += np.eye(n_features) * 1e-6
         return Sb, Sw
     
     def _scatter_separability_criterion(self, X):
@@ -134,12 +166,24 @@ class SFS(BaseEstimator, TransformerMixin):
         Calculate the scatter separability criterion
         trace(Sb * Sw^(-1))
         """
-        _, labels = self._em_clustering(X)
-        Sb, Sw = self._calculate_scatter_matrices(X, labels)
+        best_gmm = GaussianMixture(n_components=self.max_clusters, random_state=self.random_state).fit(X)
+        best_F = self._objective_function(X, best_gmm)
+        best_n_clusters = self.max_clusters
+        current_gmm = best_gmm
+
+        while current_gmm.n_components > self.min_clusters:
+            current_gmm, best_merge, delta_F = self._merge_clusters(current_gmm, X)
+            current_F = self._objective_function(X, current_gmm)
+            if current_F > best_F:
+                best_F = current_F
+                best_gmm = current_gmm
+                best_n_clusters = current_gmm.n_components
+            
+        Sb, Sw = self._calculate_scatter_matrices(X, best_gmm.predict(X))
         Sw_inv = inv(Sw)
         criterion_value = np.trace(np.dot(Sb, Sw_inv))
-        return criterion_value
-    
+        return criterion_value, best_n_clusters
+
     def fit(self, X):
         _, n_features = X.shape
         available_features = list(range(n_features))
@@ -150,7 +194,7 @@ class SFS(BaseEstimator, TransformerMixin):
                 candidate_features = self.selected_features + [feature]
                 X_selected = X[:, candidate_features]
                 # only taking scatter separability criterion for now
-                criterion_value = self._scatter_separability_criterion(X_selected)
+                criterion_value, n_clusters = self._scatter_separability_criterion(X_selected)
                 if criterion_value > best_criterion_value + self.tolerance:
                     best_criterion_value = criterion_value
                     best_feature = feature
@@ -178,8 +222,8 @@ if __name__ == '__main__':
     # selected_features = sfs.fit(X_normalized)
     # print("Selected Features:", selected_features)
     ############
-    from sklearn.datasets import load_iris
-    data = load_iris()
+    from sklearn.datasets import load_wine
+    data = load_wine()
     X = data.data
     y = data.target
     dft = DFTransformer(df=pd.DataFrame(X))
