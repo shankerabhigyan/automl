@@ -36,9 +36,8 @@ class evolveRegressionNN:
         self.data_X = data_X
         self.data_y = data_y
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-        creator.create("Individual", list, fitness=creator.FitnessMin)
+        creator.create("Individual", dict, fitness=creator.FitnessMin)
         self.toolbox = base.Toolbox()
-        self.toolbox.register("attr_int", random.randint, 10, 100)
         self.toolbox.register("individual", self.init_individual, creator.Individual)
         self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
         self.toolbox.register("evaluate", self.evaluate_individual)
@@ -49,14 +48,18 @@ class evolveRegressionNN:
         epochs = random.randint(50, 200)
         lr = random.choice([0.01, 0.001, 0.0001])
         optimizer = random.choice(['Adam', 'SGD'])
-        return icls(layers + [epochs, lr, optimizer])
-
+        return icls({'layers': layers, 'epochs': epochs, 'lr': lr, 'optimizer': optimizer})
 
     def evaluate_individual(self, individual):
-        *layers, epochs, lr, optimizer = individual
+        layers = individual['layers']
+        epochs = individual['epochs']
+        lr = individual['lr']
+        optimizer = individual['optimizer']
+
         if not isinstance(optimizer, str):
             raise ValueError(f"Optimizer type must be a string, got {type(optimizer)} instead.")
         print(f"Initialising model with layers : {layers}, epochs :{epochs}, lr : {lr} and optimizer : {optimizer}")
+        
         model = BaseNN(input_dim=self.data_X.shape[1], output_dim=1, layers=layers)
         optimizer = model.configure_optim(lr=lr, opt=optimizer)
         criterion = nn.MSELoss()
@@ -73,21 +76,34 @@ class evolveRegressionNN:
         return loss.item(),
 
     def mutate_individual(self, individual, indpb=0.1):
-        size = len(individual) - 3  # Avoid mutating the last three items (epochs, lr, optimizer)
-        for i in range(size):
-            if random.random() < indpb:
-                individual[i] = random.randint(10, 100)
+        # Mutate layer sizes
         if random.random() < indpb:
-            individual[-3] = random.randint(50, 200)  # epochs
+            num_layers = random.randint(1, 5)
+            individual['layers'] = [random.randint(10, 100) for _ in range(num_layers)]
+
+        # Mutate epochs
         if random.random() < indpb:
-            individual[-2] = random.choice([0.01, 0.001, 0.0001])  # learning rate
-        # Explicitly preserve the optimizer as a string and ensure no accidental type change
-        individual[-1] = random.choice(['Adam', 'SGD'])  # optimizer, always a string
+            individual['epochs'] = random.randint(50, 200)
+
+        # Mutate learning rate
+        if random.random() < indpb:
+            individual['lr'] = random.choice([0.01, 0.001, 0.0001])
+
+        # Mutate optimizer
+        if random.random() < indpb:
+            individual['optimizer'] = random.choice(['Adam', 'SGD'])
+
         return (individual,)
+    
+    def crossover(self, ind1, ind2):
+        for key in ind1.keys():
+            if random.random() < 0.5:
+                ind1[key], ind2[key] = ind2[key], ind1[key]
+        return ind1, ind2
 
     def setup_toolbox(self):
-        self.toolbox.register("mate", tools.cxTwoPoint)
-        self.toolbox.register("mutate", self.mutate_individual, indpb=0.1)
+        self.toolbox.register("mate", self.crossover)
+        self.toolbox.register("mutate", self.mutate_individual)
         self.toolbox.register("select", tools.selTournament, tournsize=3)
 
 if __name__ == "__main__":
@@ -99,3 +115,4 @@ if __name__ == "__main__":
     result = algorithms.eaSimple(pop, eamodel.toolbox, cxpb=0.5, mutpb=0.2, ngen=40, verbose=True)
     best_individual = tools.selBest(pop, 1)[0]
     print(f"Best individual: {best_individual} with fitness {best_individual.fitness.values}")
+
