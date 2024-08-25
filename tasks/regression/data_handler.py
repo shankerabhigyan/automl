@@ -79,7 +79,7 @@ class tSNE:
     """
     take in regression data and perform tSNE on it and return the transformed, reduced data.
     """
-    def __init__(self, perplexity=30, n_components=2, lr=200.0, n_iter=1000, rs=None):
+    def __init__(self, perplexity=30, n_components=3, lr=200.0, n_iter=1000, rs=None):
         self.perplexity = perplexity
         self.n_components = n_components
         self.lr = lr
@@ -216,8 +216,9 @@ class tSNE:
 
 
 if __name__=="__main__":
-    from sklearn.datasets import load_breast_cancer
-    data = load_breast_cancer()
+    from sklearn.datasets import load_diabetes
+    data = load_diabetes()
+    print(f"Features: {data.feature_names}")
     df = pd.DataFrame(data.data, columns=data.feature_names)
     df['target'] = data.target
     target = df['target']
@@ -228,6 +229,6 @@ if __name__=="__main__":
     splitter = DataSplitter()
     X_train, X_test, X_val, y_train, y_test, y_val = splitter.kfold_split(data, target)
 
-    tsne = tSNE(lr=200.0, n_iter=200000, rs=42)
+    tsne = tSNE(lr=400.0, n_iter=200000, rs=42)
     Y = tsne.fit_transform(X_train)
     tsne.plot(X_train, Y)
