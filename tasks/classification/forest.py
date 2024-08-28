@@ -53,6 +53,8 @@ class RandomForest:
         """
         fit to data..
         """
+        # send data to device
+        x, y = x.to(self.device), y.to(self.device)
         n_samples, n_features = x.size()
         
         for _ in range(self.n_estimators):
@@ -63,6 +65,10 @@ class RandomForest:
 
             feature_indices = None
             if self.max_features is not None:
+                if self.max_features == 'sqrt':
+                    self.max_features = int(np.sqrt(n_features))
+                elif self.max_features == 'log2':
+                    self.max_features = int(np.log2(n_features))
                 feature_indices = np.random.choice(n_features, self.max_features, replace=False) # select random features
                 x_sample = x_sample[:, feature_indices]
 
