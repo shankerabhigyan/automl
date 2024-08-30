@@ -1,6 +1,6 @@
 # AutoML
 ---
-This is project is currently experimental, under development and open for collaborations. (insert mail to for shankerabhigyan@gmail.com)
+This is project is currently experimental, under development and open for collaborations. This project is my personal venture into automating EDA and data modeling tasks, to eventually support end-to-end training and deployment.
 
 ## Current Status
 I am actively developing the core functionalities of the AutoML project. Detailed implementation plans will be shared as they become available.
