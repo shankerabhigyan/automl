@@ -1,4 +1,4 @@
-from data_handler import DataCleaner, DataSplitter
+from utils.data_handler import DataCleaner, DataSplitter
 from sbe import SBE
 import pandas as pd
 from sklearn.datasets import fetch_california_housing

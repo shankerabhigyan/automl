@@ -61,7 +61,6 @@ class DataCleaner:
 class DataSplitter:
     """
     To split data into train, test, and validation sets.
-    We use KFold for splitting since this is a regression task.
     """
     def __init__(self, n_splits=3, random_state=42, split_type='kfold'):
         self.kf = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
@@ -74,6 +73,10 @@ class DataSplitter:
             y_train, y_test = target.iloc[train_index], target.iloc[test_index]
             X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=self.kf.random_state)
         return X_train, X_test, X_val, y_train, y_test, y_val
+    
+    def simple_split(self, data, target, test_size=0.2):
+        X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=test_size, random_state=self.kf.random_state)
+        return X_train, X_test, y_train, y_test
 
 class tSNE:
     """
