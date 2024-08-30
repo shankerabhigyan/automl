@@ -42,8 +42,8 @@ class evolveRegressionNN:
 
     def init_individual(self, icls):
         num_layers = random.randint(1, 5)
-        layers = [random.randint(10, 100) for _ in range(num_layers)]
-        epochs = random.randint(500, 10000)
+        layers = [random.randint(500, 1000) for _ in range(num_layers)]
+        epochs = random.randint(500, 3000)
         lr = random.choice([0.01, 0.001, 0.0001])
         optimizer = random.choice(['Adam', 'SGD'])
         return icls({'layers': layers, 'epochs': epochs, 'lr': lr, 'optimizer': optimizer})
@@ -73,16 +73,19 @@ class evolveRegressionNN:
                 raise ValueError("Loss is NaN")
             loss.backward()
             optimizer.step()
-            if epoch % 500 == 0:
-                print(f"Epoch {epoch + 1} => Loss: {loss.item()}")
-        
+            # if epoch % 500 == 0:
+            #     print(f"Epoch {epoch + 1} => Loss: {loss.item()}")
+        print(f"Training loss: {loss.item()}")
         with torch.no_grad():
             model.eval()
             val_X_tensor = torch.tensor(self.val_X, dtype=torch.float32).to(device)
             val_y_tensor = torch.tensor(self.val_y, dtype=torch.float32).view(-1, 1).to(device)
             val_outputs = model(val_X_tensor)
             val_loss = criterion(val_outputs, val_y_tensor)
-        print(f"Validation loss: {val_loss.item()}")
+            print(f"Validation loss: {val_loss.item()}")
+            # % loss
+            mape = torch.mean(torch.abs((val_outputs - val_y_tensor) / val_y_tensor)) * 100
+            print(f"Validation MAPE: {mape.item()}")
         return val_loss.item(),
 
     def mutate_individual(self, individual, indpb=0.1):
