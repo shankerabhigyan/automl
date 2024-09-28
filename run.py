@@ -44,4 +44,24 @@ class autoModel:
         del self.data_X
         del self.data_y
 
+    def fit_data(self):
+        self._read_data()
+        self._set_task()
+        self._plot_corr()
+        self._split_data()
+        if self.task == 'regression':
+            self.model = evolveRegressionNN(self.xtrain, self.ytrain, self.xtest, self.ytest)
+        elif self.task == 'classification':
+            self.model = evolveRandomForest(self.xtrain, self.ytrain, self.xtest, self.ytest)
+        else:
+            raise ValueError('Unsupported task type')
+
     
+if __name__=='__main__':
+    import argparse 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data', type=str, help='Path to data file')
+    parser.add_argument('--target', type=str, help='Target column')
+    args = parser.parse_args()
+    data = args.data
+    target = args.target

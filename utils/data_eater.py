@@ -77,7 +77,7 @@ class EDA:
             if pd.api.types.is_numeric_dtype(target_series):
                 num_unique = target_series.nunique()
                 total = len(target_series)
-                if num_unique < min(10, total*0.05):
+                if num_unique < min(15, total*0.05):
                     return 'classification'
                 else:
                     return 'regression'

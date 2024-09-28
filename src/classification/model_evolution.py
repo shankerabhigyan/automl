@@ -49,9 +49,10 @@ class evolveRandomForest:
             bootstrap=bootstrap,
             device=self.device
         )
+        print(f"Fitting and Evaluiating chromosome {individual}")
         rf.fit(self.x, self.y)
         preds = rf.predict(self.val_x)
-        
+        print(f"Validation accuracy: {accuracy_score(self.val_y.cpu().numpy(), preds.cpu().numpy())}")
         acc =  accuracy_score(self.val_y.cpu().numpy(), preds.cpu().numpy()),
         return acc
 
@@ -96,6 +97,11 @@ class evolveRandomForest:
 
 if __name__ == "__main__":
     import os
+    import logging
+    import warnings
+    # Disable warnings
+    warnings.filterwarnings("ignore")
+    logging.disable(logging.CRITICAL)
     os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
     X, y = make_classification(n_samples=100, n_features=10, n_informative=5, n_redundant=0, random_state=42)
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
