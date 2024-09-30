@@ -11,11 +11,11 @@ class BaseNN(nn.Module):
         if len(layers) > 0:
             self.layers.append(nn.Linear(input_dim, layers[0]))
             self.layers.append(nn.BatchNorm1d(layers[0]))  # Add BatchNorm
-            self.layers.append(nn.Tanh())
+            self.layers.append(nn.ReLU())
             for i in range(1, len(layers)):
                 self.layers.append(nn.Linear(layers[i-1], layers[i]))
                 self.layers.append(nn.BatchNorm1d(layers[i]))  # Add BatchNorm
-                self.layers.append(nn.Tanh())
+                self.layers.append(nn.ReLU())
             self.layers.append(nn.Linear(layers[-1], output_dim))
         else:
             self.layers.append(nn.Linear(input_dim, output_dim))
@@ -70,7 +70,8 @@ class evolveRegressionNN:
             outputs = model(X_tensor)
             loss = criterion(outputs, y_tensor)
             if torch.isnan(loss).any():
-                raise ValueError("Loss is NaN")
+                print(f"Loss is NaN at epoch {epoch}, skipping")
+                continue
             loss.backward()
             optimizer.step()
             # if epoch % 500 == 0:
