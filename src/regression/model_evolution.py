@@ -153,10 +153,10 @@ class evolveRegressionNN:
     def evolve(self):
         self.setup_toolbox()
         pop = self.toolbox.population(n=25)
-        result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.4, ngen=2, stats=self.stats, halloffame=None, verbose=True)
+        result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.4, ngen=3, stats=self.stats, halloffame=None, verbose=True)
         # save result as it is
         self.result = result
-
+        print(f"Result: {result}")
         log = self.stats.compile(pop)
         self.logbook.record(gen=0, nevals=len(pop), **log)
         # for gen, log in enumerate(result[1]):
