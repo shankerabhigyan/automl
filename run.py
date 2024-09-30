@@ -22,8 +22,8 @@ class autoModel:
         self.val_y = None
 
     def _read_data(self):
-        de = DataEater(self.data,strategy='mean')
-        de.fetch_data(target_column=self.target_col)
+        de = DataEater(self.data,strategy='mean',target_column=self.target_col)
+        de.fetch_data()
         de.clean()
         self.data = de.data
 
