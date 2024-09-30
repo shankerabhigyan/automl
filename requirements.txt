@@ -1,0 +1,6 @@
+deap
+numpy
+scikit-learn
+pandas
+matplotlib
+statsmodels
