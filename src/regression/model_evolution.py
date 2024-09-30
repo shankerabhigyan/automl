@@ -62,7 +62,7 @@ class evolveRegressionNN:
         self.val_X = val_X
         self.val_y = val_y
         self.logbook = tools.Logbook()
-        self.logbook.header = ['gen', 'nevals'] #+ (self.stats.fields if self.stats else [])
+        self.logbook.header = ['gen', 'avg', 'spam'] #+ (self.stats.fields if self.stats else [])
 
     def init_individual(self, icls):
         num_layers = random.randint(1, 5)
@@ -152,10 +152,15 @@ class evolveRegressionNN:
 
     def evolve(self):
         self.setup_toolbox()
-        pop = self.toolbox.population(n=50)
-        result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.4, ngen=40, stats=self.stats, halloffame=None, verbose=True)
-        for gen, log in enumerate(result[1]):
-            self.logbook.record(gen=gen, nevals=len(pop), **log)
+        pop = self.toolbox.population(n=25)
+        result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.4, ngen=15, stats=self.stats, halloffame=None, verbose=True)
+        # save result as it is
+        self.result = result
+
+        log = self.stats.compile(pop)
+        self.logbook.record(gen=0, nevals=len(pop), **log)
+        # for gen, log in enumerate(result[1]):
+        #     self.logbook.record(gen=gen, nevals=len(pop), **log)
         best_individual = tools.selBest(pop, 1)[0]
         print(f"Best individual: {best_individual} with fitness {best_individual.fitness.values}")
         return best_individual
