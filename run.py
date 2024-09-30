@@ -46,7 +46,8 @@ class autoModel:
 
     def fit_data(self):
         self._read_data()
-        self._set_task()
+        if self.task is None:
+            self._set_task()
         self._plot_corr()
         self._split_data()
         if self.task == 'regression':
@@ -68,9 +69,8 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data', type=str, help='Path to data file')
     parser.add_argument('--target', type=str, help='Target column')
+    parser.add_argument('--task', type=str, help='Task type')
     args = parser.parse_args()
-    data = args.data
-    target = args.target
 
-    am = autoModel(data, target)
+    am = autoModel(args.data, args.target, task=args.task)
     am.fit_data()
