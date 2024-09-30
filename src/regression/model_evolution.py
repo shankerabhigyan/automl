@@ -62,7 +62,7 @@ class evolveRegressionNN:
         self.val_X = val_X
         self.val_y = val_y
         self.logbook = tools.Logbook()
-        self.logbook.header = ['gen', 'nevals'] + (self.stats.fields if self.stats else [])
+        self.logbook.header = ['gen', 'nevals'] #+ (self.stats.fields if self.stats else [])
 
     def init_individual(self, icls):
         num_layers = random.randint(1, 5)
