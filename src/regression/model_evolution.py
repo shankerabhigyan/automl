@@ -153,7 +153,7 @@ class evolveRegressionNN:
     def evolve(self):
         self.setup_toolbox()
         pop = self.toolbox.population(n=25)
-        result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.4, ngen=3, stats=self.stats, halloffame=None, verbose=True)
+        result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.4, ngen=25, stats=self.stats, halloffame=None, verbose=True)
         # save result as it is
         self.result = result
         # print(f"Result: {result}")
