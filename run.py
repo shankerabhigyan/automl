@@ -71,3 +71,6 @@ if __name__=='__main__':
     args = parser.parse_args()
     data = args.data
     target = args.target
+
+    am = autoModel(data, target)
+    am.fit_data()
