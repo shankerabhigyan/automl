@@ -1,4 +1,4 @@
-from utils import DataCleaner, DataSplitter, tSNE, DataEater, EDA, LRScheduler, StepLR
+from utils import DataCleaner, DataSplitter, tSNE, DataEater, EDA, LRScheduler, StepLR, Vectorizer
 from src.regression import BaseNN, proxyNN, SBE, evolveRegressionNN
 from src.classification import Node, DecisionTree, RandomForest, evolveRandomForest
 import torch
@@ -14,7 +14,7 @@ class autoModel:
         self.data = data
         self.target_col = target_col
         self.random_state = 42
-        self.task = None
+        self.task = task
         self.model = None
         self.data_X = None
         self.data_y = None
@@ -44,12 +44,16 @@ class autoModel:
         del self.data_X
         del self.data_y
 
+    def _vectorize(self):
+        vec = Vectorizer(self.xtrain, self.ytrain)
+        self.xtrain = vec.vectorize_features()
+        self.ytrain = vec.vectorize_targets()
+
     def fit_data(self):
         self._read_data()
-        if self.task is None:
-            self._set_task()
-        self._plot_corr()
+        # self._plot_corr()
         self._split_data()
+        self._vectorize()
         if self.task == 'regression':
             self.model = evolveRegressionNN(self.xtrain, self.ytrain, self.xtest, self.ytest)
             bestindividual = self.model.evolve()
@@ -72,5 +76,5 @@ if __name__=='__main__':
     parser.add_argument('--task', type=str, help='Task type')
     args = parser.parse_args()
 
-    am = autoModel(args.data, args.target, task=args.task)
+    am = autoModel(args.data, args.target, args.task)
     am.fit_data()

@@ -1,5 +1,5 @@
 from .data_eater import DataEater, EDA
-from .data_handler import DataCleaner, DataSplitter, tSNE
+from .data_handler import DataCleaner, DataSplitter, tSNE, Vectorizer
 from .lr_scheduler import LRScheduler, StepLR, ExponentialLR, CosineAnnealingLRScheduler
 
 __all__ = [
@@ -11,5 +11,6 @@ __all__ = [
     'LRScheduler',
     'StepLR',
     'ExponentialLR',
-    'CosineAnnealingLRScheduler'
+    'CosineAnnealingLRScheduler',
+    'Vectorizer'
 ]

@@ -53,10 +53,9 @@ class RandomForest:
         """
         fit to data..
         """
-        # send data to device
-        x, y = x.to(self.device), y.to(self.device)
         n_samples, n_features = x.size()
-        
+        print(x.size(),x)
+        print(y.size(),y)
         for _ in range(self.n_estimators):
             if self.bootstrap:
                 x_sample, y_sample = self._bootstrap(x, y)

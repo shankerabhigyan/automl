@@ -5,6 +5,29 @@ from sklearn.impute import SimpleImputer
 from sklearn.model_selection import KFold, train_test_split
 from scipy import stats
 import matplotlib.pyplot as plt
+import torch
+
+class Vectorizer:
+    """
+    vecotorize features and target.
+    """
+    def __init__(self, features, targets):
+        self.features = features.to_numpy()
+        self.targets = targets.to_numpy()
+        self.feature_vectorizer = None
+        self.target_vectorizer = None
+
+    def vectorize_features(self):
+        self.feature_vectorizer = StandardScaler()
+        self.features = self.feature_vectorizer.fit_transform(self.features)
+        self.features = torch.tensor(self.features, dtype=torch.float32)
+        return self.features
+    
+    def vectorize_targets(self):
+        self.targets = torch.tensor(self.targets, dtype=torch.float32)
+        #  self.target_vectorizer = StandardScaler()
+        # self.targets = self.target_vectorizer.fit_transform(self.targets)
+        # return self.targets
 
 class DataCleaner:
     """
