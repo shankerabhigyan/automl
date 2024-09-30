@@ -4,7 +4,7 @@ from deap import base, creator, tools, algorithms
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_classification
-from forest import RandomForest
+from .forest import RandomForest
 import random
 
 class evolveRandomForest:
@@ -94,6 +94,14 @@ class evolveRandomForest:
         self.toolbox.register("mutate", self._mutate_individual)
         self.toolbox.register("evaluate", self._evaluate_individual)
         self.toolbox.register("select", tools.selTournament, tournsize=3)
+
+    def evolve(self):
+        self.setup_toolbox()
+        pop = self.toolbox.population(n=50)
+        result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.2, ngen=40, verbose=True)
+        best_individual = tools.selBest(pop, 1)[0]
+        print(f"Best individual: {best_individual} with fitness {best_individual.fitness.values}")
+        return best_individual
 
 if __name__ == "__main__":
     import os

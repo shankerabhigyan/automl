@@ -51,8 +51,14 @@ class autoModel:
         self._split_data()
         if self.task == 'regression':
             self.model = evolveRegressionNN(self.xtrain, self.ytrain, self.xtest, self.ytest)
+            bestindividual = self.model.evolve()
+            with open('best_individual.txt', 'w') as f:
+                f.write(str(bestindividual))
         elif self.task == 'classification':
             self.model = evolveRandomForest(self.xtrain, self.ytrain, self.xtest, self.ytest)
+            bestindividual = self.model.evolve()
+            with open('best_individual.txt', 'w') as f:
+                f.write(str(bestindividual))
         else:
             raise ValueError('Unsupported task type')
 

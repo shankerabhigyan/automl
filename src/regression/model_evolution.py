@@ -126,6 +126,13 @@ class evolveRegressionNN:
         self.toolbox.register("evaluate", self.evaluate_individual)
         self.toolbox.register("select", tools.selTournament, tournsize=3)
 
+    def evolve(self):
+        pop = self.toolbox.population(n=50)
+        result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.4, ngen=40, verbose=True)
+        best_individual = tools.selBest(pop, 1)[0]
+        print(f"Best individual: {best_individual} with fitness {best_individual.fitness.values}")
+        return best_individual
+
 if __name__ == "__main__":
     from sklearn.datasets import load_diabetes
     data = load_diabetes()
