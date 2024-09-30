@@ -56,6 +56,11 @@ class RandomForest:
         n_samples, n_features = x.size()
         # print(x.size(),x)
         # print(y.size(),y)
+        
+        # s and y to self.device
+        x = x.to(self.device)
+        y = y.to(self.device)
+        
         for _ in range(self.n_estimators):
             if self.bootstrap:
                 x_sample, y_sample = self._bootstrap(x, y)
