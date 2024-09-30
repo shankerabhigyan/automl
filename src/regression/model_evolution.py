@@ -156,11 +156,13 @@ class evolveRegressionNN:
         result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.4, ngen=3, stats=self.stats, halloffame=None, verbose=True)
         # save result as it is
         self.result = result
-        print(f"Result: {result}")
+        # print(f"Result: {result}")
+        # save result.txt
+        with open('result.txt', 'w') as f:
+            f.write(str(result[1]))
         log = self.stats.compile(pop)
         self.logbook.record(gen=0, nevals=len(pop), **log)
-        # for gen, log in enumerate(result[1]):
-        #     self.logbook.record(gen=gen, nevals=len(pop), **log)
+        
         best_individual = tools.selBest(pop, 1)[0]
         print(f"Best individual: {best_individual} with fitness {best_individual.fitness.values}")
         return best_individual
