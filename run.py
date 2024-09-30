@@ -60,7 +60,7 @@ class autoModel:
             with open('best_individual.txt', 'w') as f:
                 f.write(str(bestindividual))
         else:
-            raise ValueError('Unsupported task type')
+            raise ValueError(f"Unsupported task type {self.task}")
 
     
 if __name__=='__main__':
