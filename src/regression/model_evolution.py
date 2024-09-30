@@ -3,7 +3,26 @@ import torch.nn as nn
 from deap import base, creator, tools, algorithms
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 
+def plot_evolution(logbook):
+    """
+    logbook should be a deap logbook object
+    """
+    gen = logbook.select("gen")
+    avg_loss = logbook.select("avg")
+    best_loss = logbook.select("min")
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(gen, avg_loss, label="Average Loss")
+    plt.plot(gen, best_loss, label="Best Loss")
+    plt.xlabel("Generation")
+    plt.ylabel("Loss")
+    plt.title("Evolution of Loss over Generations")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    
 class BaseNN(nn.Module):
     def __init__(self, input_dim, output_dim, layers):
         super(BaseNN, self).__init__()
@@ -19,6 +38,9 @@ class BaseNN(nn.Module):
             self.layers.append(nn.Linear(layers[-1], output_dim))
         else:
             self.layers.append(nn.Linear(input_dim, output_dim))
+        self.mean_loss = 0.0
+        self.best_loss = 1e9
+        self.ngen = 0
     
     def forward(self, x):
         for layer in self.layers:
@@ -39,6 +61,8 @@ class evolveRegressionNN:
         self.data_y = data_y
         self.val_X = val_X
         self.val_y = val_y
+        self.logbook = tools.Logbook()
+        self.logbook.header = ['gen', 'nevals'] + (self.stats.fields if self.stats else [])
 
     def init_individual(self, icls):
         num_layers = random.randint(1, 5)
@@ -74,8 +98,6 @@ class evolveRegressionNN:
                 continue
             loss.backward()
             optimizer.step()
-            # if epoch % 500 == 0:
-            #     print(f"Epoch {epoch + 1} => Loss: {loss.item()}")
         print(f"Training loss: {loss.item()}")
         with torch.no_grad():
             model.eval()
@@ -84,26 +106,21 @@ class evolveRegressionNN:
             val_outputs = model(val_X_tensor)
             val_loss = criterion(val_outputs, val_y_tensor)
             print(f"Validation loss: {val_loss.item()}")
-            # % loss
             mape = torch.mean(torch.abs((val_outputs - val_y_tensor) / val_y_tensor)) * 100
             print(f"Validation MAPE: {mape.item()}")
         return val_loss.item(), 
 
     def mutate_individual(self, individual, indpb=0.1):
-        # Mutate layer sizes
         if random.random() < indpb:
             num_layers = random.randint(1, 5)
             individual['layers'] = [random.randint(100, 1000) for _ in range(num_layers)]
 
-        # Mutate epochs
         if random.random() < indpb:
             individual['epochs'] = random.randint(500, 10000)
 
-        # Mutate learning rate
         if random.random() < indpb:
             individual['lr'] = random.choice([0.01, 0.001, 0.0001])
 
-        # Mutate optimizer
         if random.random() < indpb:
             individual['optimizer'] = random.choice(['Adam', 'SGD'])
 
@@ -127,10 +144,18 @@ class evolveRegressionNN:
         self.toolbox.register("evaluate", self.evaluate_individual)
         self.toolbox.register("select", tools.selTournament, tournsize=3)
 
+        self.stats = tools.Statistics(lambda ind: ind.fitness.values)
+        self.stats.register("avg", np.mean)
+        self.stats.register("std", np.std)
+        self.stats.register("min", np.min)
+        self.stats.register("max", np.max)
+
     def evolve(self):
         self.setup_toolbox()
         pop = self.toolbox.population(n=50)
-        result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.4, ngen=40, verbose=True)
+        result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.4, ngen=40, stats=self.stats, halloffame=None, verbose=True)
+        for gen, log in enumerate(result[1]):
+            self.logbook.record(gen=gen, nevals=len(pop), **log)
         best_individual = tools.selBest(pop, 1)[0]
         print(f"Best individual: {best_individual} with fitness {best_individual.fitness.values}")
         return best_individual

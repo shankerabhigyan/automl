@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import random
+import pickle
 
 # Pipeline
 
@@ -63,6 +64,9 @@ class autoModel:
             bestindividual = self.model.evolve()
             with open('best_individual.txt', 'w') as f:
                 f.write(str(bestindividual))
+            logbook = self.model.logbook
+            print(f"Best individual: {bestindividual} with fitness {bestindividual.fitness.values}")
+            pickle.dump(logbook, open('logbook.pkl', 'wb'))
         elif self.task == 'classification':
             self.model = evolveRandomForest(self.xtrain, self.ytrain, self.xtest, self.ytest)
             bestindividual = self.model.evolve()
