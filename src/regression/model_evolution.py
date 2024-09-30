@@ -87,7 +87,7 @@ class evolveRegressionNN:
             # % loss
             mape = torch.mean(torch.abs((val_outputs - val_y_tensor) / val_y_tensor)) * 100
             print(f"Validation MAPE: {mape.item()}")
-        return 1/val_loss.item(), 
+        return val_loss.item(), 
 
     def mutate_individual(self, individual, indpb=0.1):
         # Mutate layer sizes
