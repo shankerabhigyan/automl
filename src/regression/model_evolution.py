@@ -127,6 +127,7 @@ class evolveRegressionNN:
         self.toolbox.register("select", tools.selTournament, tournsize=3)
 
     def evolve(self):
+        self.setup_toolbox()
         pop = self.toolbox.population(n=50)
         result = algorithms.eaSimple(pop, self.toolbox, cxpb=0.7, mutpb=0.4, ngen=40, verbose=True)
         best_individual = tools.selBest(pop, 1)[0]
