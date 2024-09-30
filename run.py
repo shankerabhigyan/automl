@@ -48,6 +48,9 @@ class autoModel:
         vec = Vectorizer(self.xtrain, self.ytrain)
         self.xtrain = vec.vectorize_features()
         self.ytrain = vec.vectorize_targets()
+        vec2 = Vectorizer(self.xtest, self.ytest)
+        self.xtest = vec2.vectorize_features()
+        self.ytest = vec2.vectorize_targets()
 
     def fit_data(self):
         self._read_data()
