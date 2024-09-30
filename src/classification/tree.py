@@ -100,7 +100,9 @@ class DecisionTree:
             return Node(value=self._most_common_label(y)) # return leaf node
         
         best_feature, best_threshold, best_impurity = self._find_best_split(x, y, num_features)
-        print(x[:, best_feature], best_threshold)
+        # make sure type is tensor
+        if best_threshold is None:
+            return Node(value=self._most_common_label(y)) # return leaf node if no split is found
         left_mask = x[:, best_feature] < best_threshold
         right_mask = x[:, best_feature] >= best_threshold
         left_subtree = self._build_tree(x[left_mask], y[left_mask], depth+1)
