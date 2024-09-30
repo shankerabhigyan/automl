@@ -25,6 +25,7 @@ class Vectorizer:
     
     def vectorize_targets(self):
         self.targets = torch.tensor(self.targets, dtype=torch.float32)
+        return self.targets
         #  self.target_vectorizer = StandardScaler()
         # self.targets = self.target_vectorizer.fit_transform(self.targets)
         # return self.targets
@@ -99,7 +100,7 @@ class DataSplitter:
     
     def simple_split(self, data, target, test_size=0.2):
         X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=test_size, random_state=self.kf.random_state)
-        return X_train, X_test, y_train, y_test
+        return X_train, y_train, X_test, y_test
 
 class tSNE:
     """

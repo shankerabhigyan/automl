@@ -54,8 +54,8 @@ class RandomForest:
         fit to data..
         """
         n_samples, n_features = x.size()
-        print(x.size(),x)
-        print(y.size(),y)
+        # print(x.size(),x)
+        # print(y.size(),y)
         for _ in range(self.n_estimators):
             if self.bootstrap:
                 x_sample, y_sample = self._bootstrap(x, y)

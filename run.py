@@ -54,6 +54,7 @@ class autoModel:
         # self._plot_corr()
         self._split_data()
         self._vectorize()
+        print(f"Feature shape : {self.xtrain.shape}, Target shape : {self.ytrain.shape}")
         if self.task == 'regression':
             self.model = evolveRegressionNN(self.xtrain, self.ytrain, self.xtest, self.ytest)
             bestindividual = self.model.evolve()

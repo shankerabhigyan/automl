@@ -36,12 +36,14 @@ class DecisionTree:
         """
         Return the most common label in y
         """
+        y = y.long()
         return torch.bincount(y).argmax().item()
     
     def _impurity(self, y):
         """
         Calculate impurity of y
         """
+        y = y.long()
         class_count = torch.bincount(y)
         probabilities = class_count.float() / y.size(0)
 
@@ -113,7 +115,7 @@ class DecisionTree:
         return torch.tensor([self._predict_class(sample, self.root) for sample in x], device=self.device)
     
     def fit(self, x, y):
-        x, y = torch.tensor(x, device=self.device), torch.tensor(y, device=self.device)
+        x, y = x.clone().detach(), y.clone().detach()
         self.root = self._build_tree(x, y, depth=0)
 
 if __name__=="__main__":
